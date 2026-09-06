@@ -140,7 +140,7 @@ app.post('/api/signup', async (req, res) => {
       method: 'POST',
       body: JSON.stringify({
         fields: {
-          'First Name':     firstName,
+          'Student Name':   `${firstName} ${lastName}`,
           'Last Name':      lastName,
           'Email':          email,
           'Clinical Slot':  [slotId],
