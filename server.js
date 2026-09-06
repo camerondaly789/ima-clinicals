@@ -101,11 +101,16 @@ app.post('/api/signup', async (req, res) => {
       return res.status(400).json({ error: 'Missing required fields.' });
     }
 
-    // Re-verify capacity at submit time (race-condition guard)
-    const [slotRecord, existingSignups] = await Promise.all([
+    // Check if this email already has a confirmed EMT signup
+    const [slotRecord, existingSignups, priorSignups] = await Promise.all([
       atFetch(`${SLOTS_TABLE}/${slotId}?fields[]=Spots+Available`),
       fetchAll(SIGNUPS_TABLE, `?filterByFormula=${encodeURIComponent(`AND({Clinical Slot}="${slotId}",{Status}!="Declined")`)}&fields[]=Status`),
+      fetchAll(SIGNUPS_TABLE, `?filterByFormula=${encodeURIComponent(`AND({Email}="${email}",{Status}!="Declined")`)}&fields[]=Email&maxRecords=1`),
     ]);
+
+    if (priorSignups.length > 0) {
+      return res.status(409).json({ error: 'This email address is already registered for a clinical shift. EMT students may only sign up for one shift.' });
+    }
 
     const spotsAvailable = slotRecord.fields['Spots Available'] || 0;
     if (existingSignups.length >= spotsAvailable) {
@@ -122,7 +127,7 @@ app.post('/api/signup', async (req, res) => {
           'Email':         email,
           'Phone':         phone,
           'Clinical Slot': [slotId],
-          'Status':        'Pending',
+          'Status':        'Confirmed',
         },
       }),
     });
@@ -146,7 +151,7 @@ app.post('/api/signup', async (req, res) => {
       resend.emails.send({
         from:    FROM_EMAIL,
         to:      email,
-        subject: `Your EMT Clinical Request — ${formattedDate} at ${site}`,
+        subject: `Clinical Shift Confirmed — ${formattedDate} at ${site}`,
         html:    studentEmail(firstName, formattedDate, site),
       })
     );
@@ -187,10 +192,10 @@ function supervisorEmail(name, email, phone, date, site) {
 <div style="max-width:560px;margin:0 auto;background:#fff;border-radius:10px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,0.08);">
   <div style="background:#CA0D0C;padding:20px 24px;color:#fff;">
     <div style="font-size:20px;font-weight:800;">IMA Clinical Scheduling</div>
-    <div style="font-size:12px;opacity:0.85;margin-top:2px;text-transform:uppercase;letter-spacing:0.05em;">New Student Signup — Action Required</div>
+    <div style="font-size:12px;opacity:0.85;margin-top:2px;text-transform:uppercase;letter-spacing:0.05em;">New Student Signup — Confirmed</div>
   </div>
   <div style="padding:24px;">
-    <p style="font-size:15px;color:#1a1a2e;margin:0 0 20px;line-height:1.5;">A student has requested a clinical shift. Please review and confirm or decline in AirTable.</p>
+    <p style="font-size:15px;color:#1a1a2e;margin:0 0 20px;line-height:1.5;">A student has signed up for a clinical shift. Their spot is confirmed. Contact them if you have any questions or need to make changes.</p>
     <table style="width:100%;border-collapse:collapse;font-size:14px;">
       <tr style="border-bottom:1px solid #e5e7eb;">
         <td style="padding:10px 0;color:#6b7280;font-weight:600;width:130px;">Student</td>
@@ -216,7 +221,7 @@ function supervisorEmail(name, email, phone, date, site) {
     <div style="margin-top:24px;">
       <a href="https://airtable.com/appzAoCLDfmTHYuRG/tblMa2Ml3y7RH4nIt"
          style="display:inline-block;background:#CA0D0C;color:#fff;padding:11px 22px;border-radius:7px;text-decoration:none;font-weight:700;font-size:14px;">
-        Review in AirTable →
+        View in AirTable →
       </a>
     </div>
   </div>
@@ -233,19 +238,18 @@ function studentEmail(firstName, date, site) {
 <div style="max-width:560px;margin:0 auto;background:#fff;border-radius:10px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,0.08);">
   <div style="background:#CA0D0C;padding:20px 24px;color:#fff;">
     <div style="font-size:20px;font-weight:800;">Idaho Medical Academy</div>
-    <div style="font-size:12px;opacity:0.85;margin-top:2px;text-transform:uppercase;letter-spacing:0.05em;">Clinical Shift Request Received</div>
+    <div style="font-size:12px;opacity:0.85;margin-top:2px;text-transform:uppercase;letter-spacing:0.05em;">Clinical Shift Confirmed</div>
   </div>
   <div style="padding:24px;">
     <p style="font-size:16px;color:#1a1a2e;margin:0 0 16px;font-weight:700;">Hi ${firstName},</p>
-    <p style="font-size:14px;color:#4b5563;margin:0 0 20px;line-height:1.6;">We received your EMT clinical shift request. Here's what you submitted:</p>
+    <p style="font-size:14px;color:#4b5563;margin:0 0 20px;line-height:1.6;">Your EMT clinical shift has been confirmed. Here are your details:</p>
     <div style="background:#f9fafb;border-radius:8px;padding:16px 20px;margin-bottom:20px;border-left:4px solid #CA0D0C;">
-      <div style="font-size:13px;color:#6b7280;text-transform:uppercase;letter-spacing:0.06em;font-weight:700;margin-bottom:10px;">Your Request</div>
+      <div style="font-size:13px;color:#6b7280;text-transform:uppercase;letter-spacing:0.06em;font-weight:700;margin-bottom:10px;">Confirmed Shift</div>
       <div style="font-size:16px;color:#1a1a2e;font-weight:700;margin-bottom:4px;">${date}</div>
       <div style="font-size:14px;color:#4b5563;">📍 ${site}</div>
     </div>
     <p style="font-size:14px;color:#4b5563;margin:0 0 16px;line-height:1.6;">
-      Your spot is <strong>not yet confirmed</strong>. The IMA clinical supervisor will review your request and
-      send a confirmation email within 1–2 business days.
+      The IMA clinical director has been notified and will reach out if they have any questions.
     </p>
     <p style="font-size:14px;color:#4b5563;margin:0;line-height:1.6;">
       Questions? Email us at
