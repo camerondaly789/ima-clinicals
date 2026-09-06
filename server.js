@@ -169,7 +169,13 @@ app.post('/api/signup', async (req, res) => {
     );
     const results = await Promise.allSettled(emailJobs);
     results.forEach((r, i) => {
-      if (r.status === 'rejected') console.error(`Email ${i} failed:`, r.reason);
+      if (r.status === 'rejected') {
+        console.error(`Email ${i} failed (rejected):`, r.reason);
+      } else if (r.value?.error) {
+        console.error(`Email ${i} failed (resend):`, JSON.stringify(r.value.error));
+      } else {
+        console.log(`Email ${i} sent ok, id=${r.value?.data?.id}`);
+      }
     });
 
     res.json({ success: true });
