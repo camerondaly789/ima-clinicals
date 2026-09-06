@@ -102,12 +102,15 @@ app.post('/api/signup', async (req, res) => {
       return res.status(400).json({ error: 'Missing required fields.' });
     }
 
+    console.log(`POST /api/signup: slotId=${slotId} date=${date} email=${email} shiftTime=${shiftTime}`);
+
     // Check if this email already has a confirmed EMT signup
     const [slotRecord, existingSignups, priorSignups] = await Promise.all([
       atFetch(`${SLOTS_TABLE}/${slotId}?fields[]=Spots+Available`),
       fetchAll(SIGNUPS_TABLE, `?filterByFormula=${encodeURIComponent(`AND({Clinical Slot}="${slotId}",{Status}!="Declined")`)}&fields[]=Status`),
       fetchAll(SIGNUPS_TABLE, `?filterByFormula=${encodeURIComponent(`AND({Email}="${email}",{Status}!="Declined")`)}&fields[]=Email&maxRecords=1`),
     ]);
+    console.log(`  slotRecord spots=${slotRecord.fields['Spots Available']} existingSignups=${existingSignups.length} priorSignups=${priorSignups.length}`);
 
     if (priorSignups.length > 0) {
       return res.status(409).json({ error: 'This email address is already registered for a clinical shift. EMT students may only sign up for one shift.' });
@@ -119,6 +122,7 @@ app.post('/api/signup', async (req, res) => {
     }
 
     // Write signup to AirTable
+    console.log(`  writing signup: ${firstName} ${lastName} ${email} slot=${slotId} date=${date}`);
     await atFetch(SIGNUPS_TABLE, {
       method: 'POST',
       body: JSON.stringify({
