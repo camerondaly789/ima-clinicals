@@ -106,7 +106,7 @@ app.post('/api/signup', async (req, res) => {
 
     // Check if this email already has a confirmed EMT signup
     console.log('  step 1: fetching slot record');
-    const slotRecord = await atFetch(`${SLOTS_TABLE}/${slotId}?fields[]=Spots+Available`);
+    const slotRecord = await atFetch(`${SLOTS_TABLE}/${slotId}`);
     console.log(`  step 1 ok: spots=${slotRecord.fields['Spots Available']}`);
 
     console.log('  step 2: checking existing signups for slot');
