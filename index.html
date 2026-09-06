@@ -1,0 +1,802 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>IMA Clinical Scheduling — EMT Program</title>
+<style>
+/* ── Reset & Base ────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: #f4f5f7;
+  color: #1a1a2e;
+  min-height: 100vh;
+}
+
+/* ── Variables ───────────────────────────────────── */
+:root {
+  --red:      #CA0D0C;
+  --red-dark: #a00a09;
+  --blue:     #185FA5;
+  --green:    #1e7e34;
+  --gray:     #6b7280;
+  --gray-lt:  #e5e7eb;
+  --white:    #ffffff;
+  --radius:   10px;
+  --shadow:   0 2px 12px rgba(0,0,0,0.08);
+}
+
+/* ── Header ──────────────────────────────────────── */
+.site-header {
+  background: var(--red);
+  color: var(--white);
+  padding: 0 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 60px;
+  border-bottom: 3px solid var(--red-dark);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+.header-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.header-logo {
+  width: 36px;
+  height: 36px;
+  background: rgba(255,255,255,0.2);
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 900;
+  font-size: 16px;
+  letter-spacing: -1px;
+}
+.header-title {
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+}
+.header-subtitle {
+  font-size: 11px;
+  opacity: 0.8;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+.header-badge {
+  background: rgba(255,255,255,0.15);
+  border: 1px solid rgba(255,255,255,0.3);
+  color: var(--white);
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 20px;
+  letter-spacing: 0.04em;
+}
+
+/* ── Page Layout ─────────────────────────────────── */
+.page-wrap {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 28px 20px 60px;
+}
+
+/* ── Intro Banner ────────────────────────────────── */
+.intro-banner {
+  background: var(--white);
+  border-radius: var(--radius);
+  border-left: 4px solid var(--red);
+  padding: 18px 22px;
+  margin-bottom: 28px;
+  box-shadow: var(--shadow);
+}
+.intro-banner h2 {
+  font-size: 16px;
+  font-weight: 700;
+  margin-bottom: 6px;
+  color: var(--red);
+}
+.intro-banner p {
+  font-size: 13.5px;
+  color: var(--gray);
+  line-height: 1.6;
+}
+.intro-banner strong { color: #1a1a2e; }
+
+/* ── Stats Row ───────────────────────────────────── */
+.stats-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  margin-bottom: 28px;
+}
+.stat-card {
+  background: var(--white);
+  border-radius: var(--radius);
+  padding: 16px 18px;
+  box-shadow: var(--shadow);
+  text-align: center;
+}
+.stat-num {
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--red);
+  line-height: 1;
+  margin-bottom: 4px;
+}
+.stat-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--gray);
+  font-weight: 600;
+}
+
+/* ── Site Columns ────────────────────────────────── */
+.sites-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+  align-items: start;
+}
+@media (max-width: 768px) {
+  .sites-grid { grid-template-columns: 1fr; }
+  .stats-row  { grid-template-columns: repeat(3, 1fr); }
+}
+
+/* ── Site Card ───────────────────────────────────── */
+.site-card {
+  background: var(--white);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+.site-card-header {
+  padding: 16px 18px 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.site-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  flex-shrink: 0;
+}
+.site-name {
+  font-size: 15px;
+  font-weight: 700;
+}
+.site-type {
+  font-size: 11px;
+  color: var(--gray);
+  font-weight: 500;
+  margin-top: 2px;
+}
+.site-card-body { padding: 0 0 8px; }
+
+/* Site color themes */
+.site-acute   .site-card-header { border-bottom: 2px solid #fde8e8; background: #fff8f8; }
+.site-acute   .site-icon        { background: #fde8e8; color: var(--red); }
+.site-acute   .site-name        { color: var(--red); }
+.site-victory .site-card-header { border-bottom: 2px solid #dbeafe; background: #f0f7ff; }
+.site-victory .site-icon        { background: #dbeafe; color: var(--blue); }
+.site-victory .site-name        { color: var(--blue); }
+.site-gem     .site-card-header { border-bottom: 2px solid #d1fae5; background: #f0fdf4; }
+.site-gem     .site-icon        { background: #d1fae5; color: var(--green); }
+.site-gem     .site-name        { color: var(--green); }
+
+/* ── Slot List ───────────────────────────────────── */
+.slot-list { list-style: none; }
+.slot-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 11px 18px;
+  border-bottom: 1px solid var(--gray-lt);
+  cursor: pointer;
+  transition: background 0.15s;
+  gap: 10px;
+}
+.slot-item:last-child { border-bottom: none; }
+.slot-item:hover:not(.slot-full) { background: #f9fafb; }
+.slot-item.slot-full  { opacity: 0.55; cursor: default; }
+
+.slot-date-block { flex: 1; }
+.slot-date-main  { font-size: 14px; font-weight: 600; color: #1a1a2e; }
+.slot-date-day   { font-size: 11px; color: var(--gray); margin-top: 1px; }
+
+.slot-badge {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 9px;
+  border-radius: 20px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.badge-open {
+  background: #d1fae5;
+  color: #065f46;
+}
+.badge-low {
+  background: #fef3c7;
+  color: #92400e;
+}
+.badge-full {
+  background: #f3f4f6;
+  color: var(--gray);
+}
+
+.slot-arrow {
+  color: var(--gray);
+  font-size: 13px;
+  flex-shrink: 0;
+}
+.slot-item.slot-full .slot-arrow { display: none; }
+
+.no-slots {
+  padding: 20px 18px;
+  font-size: 13px;
+  color: var(--gray);
+  text-align: center;
+  font-style: italic;
+}
+
+/* ── Loading / Error ─────────────────────────────── */
+.loading-wrap {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--gray);
+  font-size: 14px;
+}
+.spinner {
+  width: 32px; height: 32px;
+  border: 3px solid var(--gray-lt);
+  border-top-color: var(--red);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  margin: 0 auto 14px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── Modal Overlay ───────────────────────────────── */
+.modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.45);
+  z-index: 200;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+.modal-overlay.open { display: flex; }
+
+.modal {
+  background: var(--white);
+  border-radius: 14px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+  width: 100%;
+  max-width: 440px;
+  overflow: hidden;
+  animation: modalIn 0.2s ease;
+}
+@keyframes modalIn {
+  from { opacity: 0; transform: scale(0.95) translateY(10px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.modal-header {
+  padding: 20px 22px 16px;
+  border-bottom: 1px solid var(--gray-lt);
+}
+.modal-header h3 { font-size: 17px; font-weight: 700; margin-bottom: 4px; }
+.modal-slot-info {
+  font-size: 13px;
+  color: var(--gray);
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.modal-slot-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-weight: 600;
+  color: #1a1a2e;
+}
+
+.modal-body { padding: 20px 22px; }
+.form-row { margin-bottom: 14px; }
+.form-row label {
+  display: block;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--gray);
+  margin-bottom: 5px;
+}
+.form-row input {
+  width: 100%;
+  padding: 9px 12px;
+  border: 1.5px solid var(--gray-lt);
+  border-radius: 7px;
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.15s;
+  font-family: inherit;
+}
+.form-row input:focus { border-color: var(--red); }
+.form-note {
+  font-size: 12px;
+  color: var(--gray);
+  margin-top: 12px;
+  line-height: 1.5;
+}
+
+.modal-footer {
+  padding: 14px 22px 20px;
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+}
+.btn-cancel {
+  padding: 9px 18px;
+  border: 1.5px solid var(--gray-lt);
+  border-radius: 7px;
+  background: transparent;
+  color: var(--gray);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.15s;
+}
+.btn-cancel:hover { background: #f9fafb; }
+.btn-submit {
+  padding: 9px 22px;
+  border: none;
+  border-radius: 7px;
+  background: var(--red);
+  color: var(--white);
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.15s;
+}
+.btn-submit:hover:not(:disabled) { background: var(--red-dark); }
+.btn-submit:disabled { opacity: 0.6; cursor: default; }
+
+/* ── Success State ───────────────────────────────── */
+.success-wrap {
+  padding: 32px 22px;
+  text-align: center;
+}
+.success-icon {
+  font-size: 44px;
+  margin-bottom: 14px;
+}
+.success-wrap h3 {
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: 8px;
+  color: var(--green);
+}
+.success-wrap p {
+  font-size: 14px;
+  color: var(--gray);
+  line-height: 1.6;
+  margin-bottom: 20px;
+}
+.btn-done {
+  padding: 10px 28px;
+  border: none;
+  border-radius: 7px;
+  background: var(--green);
+  color: var(--white);
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+/* ── Error Banner ────────────────────────────────── */
+.error-banner {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #991b1b;
+  border-radius: 8px;
+  padding: 12px 16px;
+  font-size: 13px;
+  margin-bottom: 10px;
+  display: none;
+}
+.error-banner.show { display: block; }
+</style>
+</head>
+<body>
+
+<!-- ── Header ──────────────────────────────────── -->
+<header class="site-header">
+  <div class="header-brand">
+    <div class="header-logo">IMA</div>
+    <div>
+      <div class="header-title">Idaho Medical Academy</div>
+      <div class="header-subtitle">Clinical Scheduling</div>
+    </div>
+  </div>
+  <span class="header-badge">EMT Program</span>
+</header>
+
+<!-- ── Main Content ────────────────────────────── -->
+<main class="page-wrap">
+
+  <!-- Intro -->
+  <div class="intro-banner">
+    <h2>Schedule Your EMT Clinical Shift</h2>
+    <p>Available clinical dates are listed below by site. Spots are <strong>first-come, first-served</strong> — click an open date to claim your shift. After submitting, the clinical supervisor will confirm your spot by email. Contact <strong>clinicals@idahomedicalacademy.com</strong> with any questions.</p>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats-row" id="stats-row">
+    <div class="stat-card"><div class="stat-num" id="stat-total">—</div><div class="stat-label">Open Dates</div></div>
+    <div class="stat-card"><div class="stat-num" id="stat-spots">—</div><div class="stat-label">Spots Available</div></div>
+    <div class="stat-card"><div class="stat-num" id="stat-sites">3</div><div class="stat-label">Clinical Sites</div></div>
+  </div>
+
+  <!-- Loading -->
+  <div class="loading-wrap" id="loading">
+    <div class="spinner"></div>
+    Loading available dates...
+  </div>
+
+  <!-- Site Columns -->
+  <div class="sites-grid" id="sites-grid" style="display:none">
+
+    <div class="site-card site-acute">
+      <div class="site-card-header">
+        <div class="site-icon">🚒</div>
+        <div>
+          <div class="site-name">Acute Rescue</div>
+          <div class="site-type">Fire / EMS — Clinical Site</div>
+        </div>
+      </div>
+      <div class="site-card-body">
+        <ul class="slot-list" id="slots-Acute Rescue"></ul>
+      </div>
+    </div>
+
+    <div class="site-card site-victory">
+      <div class="site-card-header">
+        <div class="site-icon">🚑</div>
+        <div>
+          <div class="site-name">Victory Ambulance</div>
+          <div class="site-type">Ambulance Service — Clinical Site</div>
+        </div>
+      </div>
+      <div class="site-card-body">
+        <ul class="slot-list" id="slots-Victory Ambulance"></ul>
+      </div>
+    </div>
+
+    <div class="site-card site-gem">
+      <div class="site-card-header">
+        <div class="site-icon">🏥</div>
+        <div>
+          <div class="site-name">Gem County</div>
+          <div class="site-type">County EMS — Clinical Site</div>
+        </div>
+      </div>
+      <div class="site-card-body">
+        <ul class="slot-list" id="slots-Gem County"></ul>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<!-- ── Signup Modal ─────────────────────────────── -->
+<div class="modal-overlay" id="modal-overlay" onclick="handleOverlayClick(event)">
+  <div class="modal" id="modal">
+
+    <!-- Form View -->
+    <div id="modal-form-view">
+      <div class="modal-header">
+        <h3>Sign Up for Clinical Shift</h3>
+        <div class="modal-slot-info">
+          <span class="modal-slot-chip">📅 <span id="modal-date"></span></span>
+          <span class="modal-slot-chip">📍 <span id="modal-site"></span></span>
+          <span class="modal-slot-chip">🪑 <span id="modal-spots"></span> spot(s) remaining</span>
+        </div>
+      </div>
+      <div class="modal-body">
+        <div class="error-banner" id="form-error"></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+          <div class="form-row">
+            <label>First Name</label>
+            <input type="text" id="f-first" placeholder="Jane" autocomplete="given-name" />
+          </div>
+          <div class="form-row">
+            <label>Last Name</label>
+            <input type="text" id="f-last" placeholder="Smith" autocomplete="family-name" />
+          </div>
+        </div>
+        <div class="form-row">
+          <label>Email Address</label>
+          <input type="email" id="f-email" placeholder="jane@example.com" autocomplete="email" />
+        </div>
+        <div class="form-row">
+          <label>Phone Number</label>
+          <input type="tel" id="f-phone" placeholder="(208) 555-0100" autocomplete="tel" />
+        </div>
+        <p class="form-note">Your spot is not guaranteed until the clinical supervisor sends a confirmation email. If you need to cancel or reschedule, please contact IMA directly.</p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+        <button class="btn-submit" id="btn-submit" onclick="submitSignup()">Request This Shift</button>
+      </div>
+    </div>
+
+    <!-- Success View -->
+    <div id="modal-success-view" style="display:none">
+      <div class="success-wrap">
+        <div class="success-icon">✅</div>
+        <h3>Request Submitted!</h3>
+        <p>Your clinical shift request has been received. The IMA clinical supervisor will review and send a <strong>confirmation email</strong> to <span id="success-email"></span> within 1-2 business days.</p>
+        <button class="btn-done" onclick="closeModal()">Done</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const AT_TOKEN   = '__AIRTABLE_TOKEN__';
+const BASE_ID    = 'appzAoCLDfmTHYuRG';
+const SLOTS_TBL  = 'tblzuvnK7OIM76x5D';
+const SIGNUPS_TBL = 'tblMa2Ml3y7RH4nIt';
+
+const SITES = ['Acute Rescue', 'Victory Ambulance', 'Gem County'];
+
+let allSlots    = [];   // {id, date, site, spotsAvailable}
+let signupCounts = {};  // slotId → number of non-declined signups
+let selectedSlot = null;
+
+// ── AirTable fetch helper ───────────────────────
+async function atFetch(path) {
+  const res = await fetch(`https://api.airtable.com/v0/${BASE_ID}/${path}`, {
+    headers: { Authorization: `Bearer ${AT_TOKEN}` }
+  });
+  if (!res.ok) throw new Error(`AirTable error ${res.status}`);
+  return res.json();
+}
+
+async function atPost(table, fields) {
+  const res = await fetch(`https://api.airtable.com/v0/${BASE_ID}/${table}`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${AT_TOKEN}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ fields })
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err?.error?.message || `Error ${res.status}`);
+  }
+  return res.json();
+}
+
+// ── Paginate all records from a table ──────────
+async function fetchAll(tableId, params = '') {
+  let records = [], offset = null;
+  do {
+    const sep = params ? '&' : '?';
+    const url = `${tableId}${params}${offset ? sep + 'offset=' + encodeURIComponent(offset) : ''}`;
+    const data = await atFetch(url);
+    records = records.concat(data.records || []);
+    offset = data.offset || null;
+  } while (offset);
+  return records;
+}
+
+// ── Load data ───────────────────────────────────
+async function loadData() {
+  try {
+    // Fetch active slots from today onwards
+    const today = new Date().toISOString().split('T')[0];
+    const filter = encodeURIComponent(`AND({Active}=1,{Slot Date}>='${today}')`);
+    const sort = encodeURIComponent('Slot Date');
+    const slotRecords = await fetchAll(
+      SLOTS_TBL,
+      `?filterByFormula=${filter}&sort[0][field]=${sort}&sort[0][direction]=asc`
+    );
+
+    allSlots = slotRecords.map(r => ({
+      id:             r.id,
+      date:           r.fields['Slot Date'],
+      site:           r.fields['Site'],
+      spotsAvailable: r.fields['Spots Available'] || 0,
+      notes:          r.fields['Notes'] || ''
+    }));
+
+    // Fetch signups to count spots taken (exclude Declined)
+    const signupRecords = await fetchAll(
+      SIGNUPS_TBL,
+      `?fields[]=Clinical+Slot&fields[]=Status`
+    );
+
+    signupCounts = {};
+    signupRecords.forEach(r => {
+      if (r.fields['Status'] === 'Declined') return;
+      const linked = r.fields['Clinical Slot'] || [];
+      linked.forEach(slotId => {
+        signupCounts[slotId] = (signupCounts[slotId] || 0) + 1;
+      });
+    });
+
+    renderAll();
+  } catch (err) {
+    document.getElementById('loading').innerHTML =
+      `<p style="color:#991b1b">Failed to load clinical dates. Please refresh the page.<br><small>${err.message}</small></p>`;
+  }
+}
+
+// ── Format date helpers ─────────────────────────
+function fmtDate(iso) {
+  // iso = "YYYY-MM-DD" — parse as local date to avoid UTC offset issues
+  const [y, m, d] = iso.split('-').map(Number);
+  return new Date(y, m - 1, d).toLocaleDateString('en-US', {
+    month: 'long', day: 'numeric', year: 'numeric'
+  });
+}
+
+function fmtDayOfWeek(iso) {
+  const [y, m, d] = iso.split('-').map(Number);
+  return new Date(y, m - 1, d).toLocaleDateString('en-US', { weekday: 'long' });
+}
+
+// ── Render ──────────────────────────────────────
+function renderAll() {
+  document.getElementById('loading').style.display = 'none';
+  document.getElementById('sites-grid').style.display = 'grid';
+
+  let totalOpen = 0, totalSpots = 0;
+
+  SITES.forEach(site => {
+    const list = document.getElementById(`slots-${site}`);
+    list.innerHTML = '';
+    const siteSlots = allSlots.filter(s => s.site === site);
+
+    if (siteSlots.length === 0) {
+      list.innerHTML = '<li class="no-slots">No dates currently available.<br>Check back soon.</li>';
+      return;
+    }
+
+    siteSlots.forEach(slot => {
+      const taken     = signupCounts[slot.id] || 0;
+      const remaining = Math.max(0, slot.spotsAvailable - taken);
+      const isFull    = remaining === 0;
+
+      if (!isFull) { totalOpen++; totalSpots += remaining; }
+
+      let badgeClass, badgeText;
+      if (isFull)        { badgeClass = 'badge-full'; badgeText = 'Full'; }
+      else if (remaining === 1) { badgeClass = 'badge-low';  badgeText = '1 spot left'; }
+      else               { badgeClass = 'badge-open'; badgeText = `${remaining} spots`; }
+
+      const li = document.createElement('li');
+      li.className = `slot-item${isFull ? ' slot-full' : ''}`;
+      li.innerHTML = `
+        <div class="slot-date-block">
+          <div class="slot-date-main">${fmtDate(slot.date)}</div>
+          <div class="slot-date-day">${fmtDayOfWeek(slot.date)}</div>
+        </div>
+        <span class="slot-badge ${badgeClass}">${badgeText}</span>
+        <span class="slot-arrow">›</span>`;
+
+      if (!isFull) {
+        li.onclick = () => openModal(slot, remaining);
+      }
+      list.appendChild(li);
+    });
+  });
+
+  document.getElementById('stat-total').textContent  = totalOpen;
+  document.getElementById('stat-spots').textContent  = totalSpots;
+}
+
+// ── Modal ───────────────────────────────────────
+function openModal(slot, remaining) {
+  selectedSlot = slot;
+  document.getElementById('modal-date').textContent  = fmtDate(slot.date);
+  document.getElementById('modal-site').textContent  = slot.site;
+  document.getElementById('modal-spots').textContent = remaining;
+  // Reset form
+  ['f-first','f-last','f-email','f-phone'].forEach(id => {
+    document.getElementById(id).value = '';
+  });
+  document.getElementById('form-error').classList.remove('show');
+  document.getElementById('modal-form-view').style.display   = '';
+  document.getElementById('modal-success-view').style.display = 'none';
+  document.getElementById('btn-submit').disabled = false;
+  document.getElementById('modal-overlay').classList.add('open');
+  document.getElementById('f-first').focus();
+}
+
+function closeModal() {
+  document.getElementById('modal-overlay').classList.remove('open');
+  selectedSlot = null;
+  // Reload data so slot counts refresh
+  loadData();
+}
+
+function handleOverlayClick(e) {
+  if (e.target === document.getElementById('modal-overlay')) closeModal();
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeModal();
+});
+
+// ── Submit ──────────────────────────────────────
+async function submitSignup() {
+  const first = document.getElementById('f-first').value.trim();
+  const last  = document.getElementById('f-last').value.trim();
+  const email = document.getElementById('f-email').value.trim();
+  const phone = document.getElementById('f-phone').value.trim();
+  const errEl = document.getElementById('form-error');
+
+  errEl.classList.remove('show');
+
+  if (!first || !last)  { showError('Please enter your first and last name.'); return; }
+  if (!email || !email.includes('@')) { showError('Please enter a valid email address.'); return; }
+  if (!phone)           { showError('Please enter your phone number.'); return; }
+
+  const btn = document.getElementById('btn-submit');
+  btn.disabled = true;
+  btn.textContent = 'Submitting…';
+
+  try {
+    await atPost(SIGNUPS_TBL, {
+      'First Name':     first,
+      'Last Name':      last,
+      'Email':          email,
+      'Phone':          phone,
+      'Clinical Slot':  [selectedSlot.id],
+      'Status':         'Pending'
+    });
+
+    document.getElementById('success-email').textContent = email;
+    document.getElementById('modal-form-view').style.display    = 'none';
+    document.getElementById('modal-success-view').style.display = '';
+  } catch (err) {
+    showError('Submission failed — please try again. ' + err.message);
+    btn.disabled = false;
+    btn.textContent = 'Request This Shift';
+  }
+}
+
+function showError(msg) {
+  const el = document.getElementById('form-error');
+  el.textContent = msg;
+  el.classList.add('show');
+}
+
+// ── Init ────────────────────────────────────────
+loadData();
+</script>
+</body>
+</html>
