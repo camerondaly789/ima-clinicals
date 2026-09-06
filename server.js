@@ -77,6 +77,7 @@ app.get('/api/slots', async (req, res) => {
         id:             r.id,
         date:           r.fields['Slot Date'],
         site:           r.fields['Site'],
+        shiftTime:      r.fields['Shift Time'] || '',
         spotsAvailable,
         spotsRemaining: Math.max(0, spotsAvailable - taken),
         notes:          r.fields['Notes'] || '',
@@ -95,7 +96,7 @@ app.get('/api/slots', async (req, res) => {
 
 app.post('/api/signup', async (req, res) => {
   try {
-    const { firstName, lastName, email, phone, slotId, date, site } = req.body;
+    const { firstName, lastName, email, phone, slotId, date, site, shiftTime } = req.body;
 
     if (!firstName || !lastName || !email || !phone || !slotId) {
       return res.status(400).json({ error: 'Missing required fields.' });
@@ -128,6 +129,7 @@ app.post('/api/signup', async (req, res) => {
           'Phone':          phone,
           'Clinical Slot':  [slotId],
           'Clinical Date':  date,
+          'Shift Time':     shiftTime || '',
           'Status':         'Confirmed',
         },
       }),
@@ -135,6 +137,7 @@ app.post('/api/signup', async (req, res) => {
 
     const formattedDate = fmtDate(date);
     const studentName   = `${firstName} ${lastName}`;
+    const timeDisplay   = shiftTime ? ` · ${shiftTime}` : '';
 
     // Send emails — don't let email failure block the success response
     const emailJobs = [];
@@ -143,8 +146,8 @@ app.post('/api/signup', async (req, res) => {
         resend.emails.send({
           from:    FROM_EMAIL,
           to:      SUPERVISOR_EMAIL,
-          subject: `New EMT Clinical Signup — ${studentName} — ${formattedDate}`,
-          html:    supervisorEmail(studentName, email, phone, formattedDate, site),
+          subject: `New EMT Clinical Signup — ${studentName} — ${formattedDate}${timeDisplay}`,
+          html:    supervisorEmail(studentName, email, phone, formattedDate, shiftTime, site),
         })
       );
     }
@@ -152,8 +155,8 @@ app.post('/api/signup', async (req, res) => {
       resend.emails.send({
         from:    FROM_EMAIL,
         to:      email,
-        subject: `Clinical Shift Confirmed — ${formattedDate} at ${site}`,
-        html:    studentEmail(firstName, formattedDate, site),
+        subject: `Clinical Shift Confirmed — ${formattedDate}${timeDisplay} at ${site}`,
+        html:    studentEmail(firstName, formattedDate, shiftTime, site),
       })
     );
     const results = await Promise.allSettled(emailJobs);
@@ -187,7 +190,7 @@ function fmtDate(iso) {
 
 // ── Email templates ───────────────────────────────────────────────────────────
 
-function supervisorEmail(name, email, phone, date, site) {
+function supervisorEmail(name, email, phone, date, shiftTime, site) {
   return `<!DOCTYPE html><html><head><meta charset="UTF-8"/></head>
 <body style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#f4f5f7;margin:0;padding:20px;">
 <div style="max-width:560px;margin:0 auto;background:#fff;border-radius:10px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,0.08);">
@@ -214,6 +217,10 @@ function supervisorEmail(name, email, phone, date, site) {
         <td style="padding:10px 0;color:#6b7280;font-weight:600;">Date</td>
         <td style="padding:10px 0;color:#1a1a2e;font-weight:700;">${date}</td>
       </tr>
+      ${shiftTime ? `<tr style="border-bottom:1px solid #e5e7eb;">
+        <td style="padding:10px 0;color:#6b7280;font-weight:600;">Shift Time</td>
+        <td style="padding:10px 0;color:#1a1a2e;font-weight:700;">${shiftTime}</td>
+      </tr>` : ''}
       <tr>
         <td style="padding:10px 0;color:#6b7280;font-weight:600;">Site</td>
         <td style="padding:10px 0;color:#1a1a2e;font-weight:700;">${site}</td>
@@ -233,7 +240,7 @@ function supervisorEmail(name, email, phone, date, site) {
 </body></html>`;
 }
 
-function studentEmail(firstName, date, site) {
+function studentEmail(firstName, date, shiftTime, site) {
   return `<!DOCTYPE html><html><head><meta charset="UTF-8"/></head>
 <body style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#f4f5f7;margin:0;padding:20px;">
 <div style="max-width:560px;margin:0 auto;background:#fff;border-radius:10px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,0.08);">
@@ -247,6 +254,7 @@ function studentEmail(firstName, date, site) {
     <div style="background:#f9fafb;border-radius:8px;padding:16px 20px;margin-bottom:20px;border-left:4px solid #CA0D0C;">
       <div style="font-size:13px;color:#6b7280;text-transform:uppercase;letter-spacing:0.06em;font-weight:700;margin-bottom:10px;">Confirmed Shift</div>
       <div style="font-size:16px;color:#1a1a2e;font-weight:700;margin-bottom:4px;">${date}</div>
+      ${shiftTime ? `<div style="font-size:14px;color:#1a1a2e;font-weight:600;margin-bottom:4px;">🕐 ${shiftTime}</div>` : ''}
       <div style="font-size:14px;color:#4b5563;">📍 ${site}</div>
     </div>
     <p style="font-size:14px;color:#4b5563;margin:0 0 16px;line-height:1.6;">

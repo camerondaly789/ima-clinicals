@@ -125,6 +125,7 @@ body {
 .slot-date-block { flex: 1; }
 .slot-date-main  { font-size: 14px; font-weight: 600; color: #1a1a2e; }
 .slot-date-day   { font-size: 11px; color: var(--gray); margin-top: 1px; }
+.slot-date-time  { font-size: 11px; color: #374151; font-weight: 600; margin-top: 2px; }
 .slot-badge {
   font-size: 11px; font-weight: 700;
   padding: 3px 9px; border-radius: 20px; white-space: nowrap; flex-shrink: 0;
@@ -228,7 +229,7 @@ body {
 
   <div class="intro-banner">
     <h2>Schedule Your EMT Clinical Shift</h2>
-    <p>Available clinical dates are listed below by site. Spots are <strong>first-come, first-served</strong> — click an open date to claim your shift. After submitting, the clinical supervisor will confirm your spot by email. Contact <strong>clinicals@idahomedicalacademy.com</strong> with any questions.</p>
+    <p>Available clinical dates are listed below by site. Spots are <strong>first-come, first-served</strong> — click an open date to claim your shift. Your spot is <strong>confirmed immediately</strong> upon submission and a confirmation email will be sent to you. Contact <strong>clinicals@idahomedicalacademy.com</strong> with any questions.</p>
   </div>
 
   <div class="stats-row">
@@ -294,6 +295,7 @@ body {
         <h3>Sign Up for Clinical Shift</h3>
         <div class="modal-slot-info">
           <span class="modal-slot-chip">📅 <span id="modal-date"></span></span>
+          <span class="modal-slot-chip" id="modal-time-chip" style="display:none">🕐 <span id="modal-time"></span></span>
           <span class="modal-slot-chip">📍 <span id="modal-site"></span></span>
           <span class="modal-slot-chip">🪑 <span id="modal-spots"></span> spot(s) remaining</span>
         </div>
@@ -318,19 +320,19 @@ body {
           <label>Phone Number</label>
           <input type="tel" id="f-phone" placeholder="(208) 555-0100" autocomplete="tel" />
         </div>
-        <p class="form-note">Your spot is not guaranteed until the clinical supervisor sends a confirmation email. To cancel or reschedule, contact IMA directly.</p>
+        <p class="form-note">Your spot is confirmed immediately upon submission. The clinical director will be notified. To cancel or reschedule, contact IMA directly.</p>
       </div>
       <div class="modal-footer">
         <button class="btn-cancel" onclick="closeModal()">Cancel</button>
-        <button class="btn-submit" id="btn-submit" onclick="submitSignup()">Request This Shift</button>
+        <button class="btn-submit" id="btn-submit" onclick="submitSignup()">Confirm My Shift</button>
       </div>
     </div>
 
     <div id="modal-success-view" style="display:none">
       <div class="success-wrap">
         <div class="success-icon">✅</div>
-        <h3>Request Submitted!</h3>
-        <p>Your clinical shift request has been received. The IMA clinical supervisor will confirm your spot by email to <strong><span id="success-email"></span></strong> within 1–2 business days.</p>
+        <h3>Shift Confirmed!</h3>
+        <p>Your clinical shift has been confirmed. A confirmation email has been sent to <strong><span id="success-email"></span></strong>. The clinical director has been notified and will reach out if they have any questions.</p>
         <button class="btn-done" onclick="closeModal()">Done</button>
       </div>
     </div>
@@ -399,7 +401,7 @@ function renderAll() {
       li.innerHTML = `
         <div class="slot-date-block">
           <div class="slot-date-main">${fmtDate(slot.date)}</div>
-          <div class="slot-date-day">${fmtDay(slot.date)}</div>
+          <div class="slot-date-day">${fmtDay(slot.date)}${slot.shiftTime ? ` · <span class="slot-date-time">${slot.shiftTime}</span>` : ''}</div>
         </div>
         <span class="slot-badge ${badgeClass}">${badgeText}</span>
         <span class="slot-arrow">›</span>`;
@@ -418,12 +420,19 @@ function openModal(slot, remaining) {
   document.getElementById('modal-date').textContent  = fmtDate(slot.date);
   document.getElementById('modal-site').textContent  = slot.site;
   document.getElementById('modal-spots').textContent = remaining;
+  const timeChip = document.getElementById('modal-time-chip');
+  if (slot.shiftTime) {
+    document.getElementById('modal-time').textContent = slot.shiftTime;
+    timeChip.style.display = '';
+  } else {
+    timeChip.style.display = 'none';
+  }
   ['f-first','f-last','f-email','f-phone'].forEach(id => document.getElementById(id).value = '');
   document.getElementById('form-error').classList.remove('show');
   document.getElementById('modal-form-view').style.display    = '';
   document.getElementById('modal-success-view').style.display = 'none';
   document.getElementById('btn-submit').disabled = false;
-  document.getElementById('btn-submit').textContent = 'Request This Shift';
+  document.getElementById('btn-submit').textContent = 'Confirm My Shift';
   document.getElementById('modal-overlay').classList.add('open');
   document.getElementById('f-first').focus();
 }
@@ -453,7 +462,7 @@ async function submitSignup() {
 
   const btn = document.getElementById('btn-submit');
   btn.disabled = true;
-  btn.textContent = 'Submitting…';
+  btn.textContent = 'Confirming…';
 
   try {
     const res = await fetch('/api/signup', {
@@ -464,9 +473,10 @@ async function submitSignup() {
         lastName:  last,
         email,
         phone,
-        slotId: selectedSlot.id,
-        date:   selectedSlot.date,
-        site:   selectedSlot.site,
+        slotId:    selectedSlot.id,
+        date:      selectedSlot.date,
+        site:      selectedSlot.site,
+        shiftTime: selectedSlot.shiftTime || '',
       }),
     });
     const data = await res.json();
@@ -478,7 +488,7 @@ async function submitSignup() {
   } catch (err) {
     showError(err.message);
     btn.disabled = false;
-    btn.textContent = 'Request This Shift';
+    btn.textContent = 'Confirm My Shift';
   }
 }
 
