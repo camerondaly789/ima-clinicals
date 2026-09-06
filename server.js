@@ -148,7 +148,7 @@ app.post('/api/signup', async (req, res) => {
     // Update EMT Clinical Workflow record for this student (matched by email)
     try {
       const workflowRecords = await fetchAll(WORKFLOW_TABLE,
-        `?filterByFormula=${encodeURIComponent(`FIND("${email}", ARRAYJOIN({Email}, ","))`)}&maxRecords=1`
+        `?filterByFormula=${encodeURIComponent(`SEARCH("${email}", LOWER(ARRAYJOIN({Email}, ",")))`)}&maxRecords=1`
       );
       if (workflowRecords.length > 0) {
         const wfId = workflowRecords[0].id;
