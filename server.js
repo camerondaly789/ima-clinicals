@@ -96,9 +96,9 @@ app.get('/api/slots', async (req, res) => {
 
 app.post('/api/signup', async (req, res) => {
   try {
-    const { firstName, lastName, email, phone, slotId, date, site, shiftTime } = req.body;
+    const { firstName, lastName, email, slotId, date, site, shiftTime } = req.body;
 
-    if (!firstName || !lastName || !email || !phone || !slotId) {
+    if (!firstName || !lastName || !email || !slotId) {
       return res.status(400).json({ error: 'Missing required fields.' });
     }
 
@@ -126,7 +126,6 @@ app.post('/api/signup', async (req, res) => {
           'First Name':     firstName,
           'Last Name':      lastName,
           'Email':          email,
-          'Phone':          phone,
           'Clinical Slot':  [slotId],
           'Clinical Date':  date,
           'Shift Time':     shiftTime || '',
@@ -147,7 +146,7 @@ app.post('/api/signup', async (req, res) => {
           from:    FROM_EMAIL,
           to:      SUPERVISOR_EMAIL,
           subject: `New EMT Clinical Signup — ${studentName} — ${formattedDate}${timeDisplay}`,
-          html:    supervisorEmail(studentName, email, phone, formattedDate, shiftTime, site),
+          html:    supervisorEmail(studentName, email, formattedDate, shiftTime, site),
         })
       );
     }
@@ -190,7 +189,7 @@ function fmtDate(iso) {
 
 // ── Email templates ───────────────────────────────────────────────────────────
 
-function supervisorEmail(name, email, phone, date, shiftTime, site) {
+function supervisorEmail(name, email, date, shiftTime, site) {
   return `<!DOCTYPE html><html><head><meta charset="UTF-8"/></head>
 <body style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#f4f5f7;margin:0;padding:20px;">
 <div style="max-width:560px;margin:0 auto;background:#fff;border-radius:10px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,0.08);">
@@ -208,10 +207,6 @@ function supervisorEmail(name, email, phone, date, shiftTime, site) {
       <tr style="border-bottom:1px solid #e5e7eb;">
         <td style="padding:10px 0;color:#6b7280;font-weight:600;">Email</td>
         <td style="padding:10px 0;"><a href="mailto:${email}" style="color:#CA0D0C;">${email}</a></td>
-      </tr>
-      <tr style="border-bottom:1px solid #e5e7eb;">
-        <td style="padding:10px 0;color:#6b7280;font-weight:600;">Phone</td>
-        <td style="padding:10px 0;color:#1a1a2e;">${phone}</td>
       </tr>
       <tr style="border-bottom:1px solid #e5e7eb;">
         <td style="padding:10px 0;color:#6b7280;font-weight:600;">Date</td>

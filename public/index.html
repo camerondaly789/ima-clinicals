@@ -316,10 +316,7 @@ body {
           <label>Email Address</label>
           <input type="email" id="f-email" placeholder="jane@example.com" autocomplete="email" />
         </div>
-        <div class="form-row">
-          <label>Phone Number</label>
-          <input type="tel" id="f-phone" placeholder="(208) 555-0100" autocomplete="tel" />
-        </div>
+
         <p class="form-note">Your spot is confirmed immediately upon submission. The clinical director will be notified. To cancel or reschedule, contact IMA directly.</p>
       </div>
       <div class="modal-footer">
@@ -453,12 +450,10 @@ async function submitSignup() {
   const first = document.getElementById('f-first').value.trim();
   const last  = document.getElementById('f-last').value.trim();
   const email = document.getElementById('f-email').value.trim();
-  const phone = document.getElementById('f-phone').value.trim();
 
   document.getElementById('form-error').classList.remove('show');
   if (!first || !last)               { showError('Please enter your first and last name.'); return; }
   if (!email || !email.includes('@')){ showError('Please enter a valid email address.'); return; }
-  if (!phone)                        { showError('Please enter your phone number.'); return; }
 
   const btn = document.getElementById('btn-submit');
   btn.disabled = true;
@@ -472,7 +467,6 @@ async function submitSignup() {
         firstName: first,
         lastName:  last,
         email,
-        phone,
         slotId:    selectedSlot.id,
         date:      selectedSlot.date,
         site:      selectedSlot.site,
