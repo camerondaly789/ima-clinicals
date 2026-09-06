@@ -1,0 +1,16 @@
+{
+  "name": "ima-clinicals",
+  "version": "1.0.0",
+  "description": "IMA EMT Clinical Scheduling — student-facing calendar and signup",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "resend": "^3.2.0"
+  }
+}
