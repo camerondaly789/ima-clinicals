@@ -19,6 +19,13 @@ const {
 
 const resend = new Resend(RESEND_API_KEY);
 
+// ── Clinical Site → AirTable record ID map ────────────────────────────────────
+const SITE_RECORD_IDS = {
+  'Acute Rescue':      'recbsB3QnPWJlXzMf',
+  'Victory Ambulance': 'recVM69M7uzEMxTie',
+  'Gem County':        'recSr7kmjxvqxZ4rh',
+};
+
 // ── AirTable helpers ──────────────────────────────────────────────────────────
 
 async function atFetch(path, opts = {}) {
@@ -157,7 +164,7 @@ app.post('/api/signup', async (req, res) => {
           body: JSON.stringify({
             fields: {
               'Clinical Date': date,
-              'Clinical Site': site,
+              ...(SITE_RECORD_IDS[site] ? { 'Clinical Site': [SITE_RECORD_IDS[site]] } : {}),
             },
           }),
         });
