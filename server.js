@@ -105,12 +105,17 @@ app.post('/api/signup', async (req, res) => {
     console.log(`POST /api/signup: slotId=${slotId} date=${date} email=${email} shiftTime=${shiftTime}`);
 
     // Check if this email already has a confirmed EMT signup
-    const [slotRecord, existingSignups, priorSignups] = await Promise.all([
-      atFetch(`${SLOTS_TABLE}/${slotId}?fields[]=Spots+Available`),
-      fetchAll(SIGNUPS_TABLE, `?filterByFormula=${encodeURIComponent(`AND({Clinical Slot}="${slotId}",{Status}!="Declined")`)}&fields[]=Status`),
-      fetchAll(SIGNUPS_TABLE, `?filterByFormula=${encodeURIComponent(`AND({Email}="${email}",{Status}!="Declined")`)}&fields[]=Email&maxRecords=1`),
-    ]);
-    console.log(`  slotRecord spots=${slotRecord.fields['Spots Available']} existingSignups=${existingSignups.length} priorSignups=${priorSignups.length}`);
+    console.log('  step 1: fetching slot record');
+    const slotRecord = await atFetch(`${SLOTS_TABLE}/${slotId}?fields[]=Spots+Available`);
+    console.log(`  step 1 ok: spots=${slotRecord.fields['Spots Available']}`);
+
+    console.log('  step 2: checking existing signups for slot');
+    const existingSignups = await fetchAll(SIGNUPS_TABLE, `?filterByFormula=${encodeURIComponent(`AND({Clinical Slot}="${slotId}",{Status}!="Declined")`)}&fields[]=Status`);
+    console.log(`  step 2 ok: existingSignups=${existingSignups.length}`);
+
+    console.log('  step 3: checking prior signups for email');
+    const priorSignups = await fetchAll(SIGNUPS_TABLE, `?filterByFormula=${encodeURIComponent(`AND({Email}="${email}",{Status}!="Declined")`)}&fields[]=Email&maxRecords=1`);
+    console.log(`  step 3 ok: priorSignups=${priorSignups.length}`);
 
     if (priorSignups.length > 0) {
       return res.status(409).json({ error: 'This email address is already registered for a clinical shift. EMT students may only sign up for one shift.' });
