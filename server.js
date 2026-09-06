@@ -139,6 +139,7 @@ app.post('/api/signup', async (req, res) => {
           'Clinical Date':  date,
           'Shift Time':     shiftTime || '',
           'Status':         'Confirmed',
+          'Signup Date':    new Date().toISOString().split('T')[0],
         },
       }),
     });
