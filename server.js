@@ -9,8 +9,9 @@ app.use(express.static(path.join(__dirname, 'public')));
 const {
   AIRTABLE_TOKEN,
   BASE_ID        = 'appzAoCLDfmTHYuRG',
-  SLOTS_TABLE    = 'tblzuvnK7OIM76x5D',
-  SIGNUPS_TABLE  = 'tblMa2Ml3y7RH4nIt',
+  SLOTS_TABLE       = 'tblzuvnK7OIM76x5D',
+  SIGNUPS_TABLE     = 'tblMa2Ml3y7RH4nIt',
+  WORKFLOW_TABLE    = 'EMT%20Clinical%20Workflow',
   RESEND_API_KEY,
   SUPERVISOR_EMAIL,
   FROM_EMAIL     = 'clinicals@idahoacademy.com',
@@ -143,6 +144,30 @@ app.post('/api/signup', async (req, res) => {
         },
       }),
     });
+
+    // Update EMT Clinical Workflow record for this student (matched by email)
+    try {
+      const workflowRecords = await fetchAll(WORKFLOW_TABLE,
+        `?filterByFormula=${encodeURIComponent(`{Email}="${email}"`)}&maxRecords=1`
+      );
+      if (workflowRecords.length > 0) {
+        const wfId = workflowRecords[0].id;
+        await atFetch(`${WORKFLOW_TABLE}/${wfId}`, {
+          method: 'PATCH',
+          body: JSON.stringify({
+            fields: {
+              'Clinical Date': date,
+              'Clinical Site': site,
+            },
+          }),
+        });
+        console.log(`  workflow updated for ${email}: date=${date} site=${site}`);
+      } else {
+        console.log(`  no workflow record found for ${email} — skipping`);
+      }
+    } catch (wfErr) {
+      console.error(`  workflow update failed for ${email}:`, wfErr.message);
+    }
 
     const formattedDate = fmtDate(date);
     const studentName   = `${firstName} ${lastName}`;
