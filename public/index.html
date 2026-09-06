@@ -94,10 +94,11 @@ body {
 .site-card { background: var(--white); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; }
 .site-card-header { padding: 16px 18px 14px; display: flex; align-items: center; gap: 10px; }
 .site-icon {
-  width: 38px; height: 38px; border-radius: 8px;
+  width: 44px; height: 44px; border-radius: 8px;
   display: flex; align-items: center; justify-content: center;
-  font-size: 18px; flex-shrink: 0;
+  font-size: 18px; flex-shrink: 0; overflow: hidden;
 }
+.site-icon img { width: 100%; height: 100%; object-fit: contain; }
 .site-name { font-size: 15px; font-weight: 700; }
 .site-type { font-size: 11px; color: var(--gray); font-weight: 500; margin-top: 2px; }
 .site-card-body { padding: 0 0 8px; }
@@ -247,7 +248,7 @@ body {
 
     <div class="site-card site-acute">
       <div class="site-card-header">
-        <div class="site-icon">🚒</div>
+        <div class="site-icon"><img src="/Acute%20Rescue.png" alt="Acute Rescue" /></div>
         <div>
           <div class="site-name">Acute Rescue</div>
           <div class="site-type">Fire / EMS — Clinical Site</div>
@@ -260,7 +261,7 @@ body {
 
     <div class="site-card site-victory">
       <div class="site-card-header">
-        <div class="site-icon">🚑</div>
+        <div class="site-icon"><img src="/Victory%20Ambulance.webp" alt="Victory Ambulance" /></div>
         <div>
           <div class="site-name">Victory Ambulance</div>
           <div class="site-type">Ambulance Service — Clinical Site</div>
