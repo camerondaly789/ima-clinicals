@@ -13,7 +13,7 @@ const {
   SIGNUPS_TABLE  = 'tblMa2Ml3y7RH4nIt',
   RESEND_API_KEY,
   SUPERVISOR_EMAIL,
-  FROM_EMAIL     = 'clinicals@idahomedicalacademy.com',
+  FROM_EMAIL     = 'clinicals@idahoacademy.com',
 } = process.env;
 
 const resend = new Resend(RESEND_API_KEY);
@@ -257,12 +257,12 @@ function studentEmail(firstName, date, shiftTime, site) {
     </p>
     <p style="font-size:14px;color:#4b5563;margin:0;line-height:1.6;">
       Questions? Email us at
-      <a href="mailto:clinicals@idahomedicalacademy.com" style="color:#CA0D0C;">clinicals@idahomedicalacademy.com</a>
+      <a href="mailto:clinicals@idahoacademy.com" style="color:#CA0D0C;">clinicals@idahoacademy.com</a>
     </p>
   </div>
   <div style="padding:16px 24px;border-top:1px solid #e5e7eb;font-size:12px;color:#6b7280;">
     Idaho Medical Academy · EMT Program ·
-    <a href="https://idahomedicalacademy.com" style="color:#CA0D0C;">idahomedicalacademy.com</a>
+    <a href="https://idahoacademy.com" style="color:#CA0D0C;">idahoacademy.com</a>
   </div>
 </div>
 </body></html>`;
