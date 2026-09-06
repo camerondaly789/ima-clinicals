@@ -424,7 +424,7 @@ function openModal(slot, remaining) {
   } else {
     timeChip.style.display = 'none';
   }
-  ['f-first','f-last','f-email','f-phone'].forEach(id => document.getElementById(id).value = '');
+  ['f-first','f-last','f-email'].forEach(id => document.getElementById(id).value = '');
   document.getElementById('form-error').classList.remove('show');
   document.getElementById('modal-form-view').style.display    = '';
   document.getElementById('modal-success-view').style.display = 'none';
