@@ -136,7 +136,7 @@ app.post('/api/signup', async (req, res) => {
 
     // Write signup to AirTable
     console.log(`  writing signup: ${firstName} ${lastName} ${email} slot=${slotId} date=${date}`);
-    await atFetch(SIGNUPS_TABLE, {
+    const signupRecord = await atFetch(SIGNUPS_TABLE, {
       method: 'POST',
       body: JSON.stringify({
         fields: {
@@ -163,7 +163,8 @@ app.post('/api/signup', async (req, res) => {
           method: 'PATCH',
           body: JSON.stringify({
             fields: {
-              'Clinical Date': date,
+              'Clinical Date':      date,
+              'EMT Student Signup': [signupRecord.id],
               ...(SITE_RECORD_IDS[site] ? { 'Clinical Site': [SITE_RECORD_IDS[site]] } : {}),
             },
           }),
